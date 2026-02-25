@@ -1,203 +1,75 @@
-<<<<<<< HEAD
-# FlowGate: Asynchronous Rate Limiter Proxy
+# 🌉 FlowGate: Easy Rate Limiter
 
-FlowGate is a high-performance, asynchronous API proxy designed to buffer burst traffic and enforce strict rate limits on backend services. It uses a **Producer-Consumer** architecture with **RabbitMQ** for buffering and **Redis (Lua Scripts)** for distributed token bucket rate limiting.
+FlowGate is a smart "gatekeeper" for your web services. It makes sure too many people don't crash your server at once by putting them in a queue and letting them through one by one.
 
-## 🚀 Architecture
+## 🌟 How it works (The Simple Version)
+Imagine 100 people try to enter a shop at the same time:
+1.  **FlowGate** stands at the door.
+2.  It gives everyone a "waiting ticket" immediately (**202 Accepted**).
+3.  It puts everyone in a line (**RabbitMQ Queue**).
+4.  It let's people in only as fast as the shop can handle (**Rate Limiting**).
 
-1.  **Ingestion Layer (`proxyController`)**:
-    -   Receives incoming HTTP requests.
-    -   Immediately acknowledges with `202 Accepted`.
-    -   Publishes the request metadata (method, URL, headers, body) to a RabbitMQ queue.
-    -   **Scaling**: Can handle massive bursts of traffic without overwhelming the backend.
+---
 
-2.  **Processing Layer (`ThrottleConsumer`)**:
-    -   Consumes messages from the queue.
-    -   **Throttling**: Checks Redis for available tokens for the specific API Key.
-    -   **Backoff**: If no tokens are available, it **blocks/waits** until the bucket refills.
-    -   **Forwarding**: Once allowed, forwards the request to the target backend service.
+## 🛠 What you need
+-   **Java 17** (The engine)
+-   **Redis** (The memory - keeps track of how many "tickets" are left)
+-   **RabbitMQ** (The waiting room - holds the queue)
 
-3.  **Backend (`demo`)**:
-    -   The protected upstream service (e.g., Order System).
+---
 
-## 🛠 Prerequisites
+## 🚀 Getting Started
 
--   **Java 17+**
--   **Redis server** (running on `localhost:6379`)
--   **RabbitMQ server** (running on `localhost:5672`)
--   **Maven** (optional, wrapper included)
-
-## 📦 Project Structure
-
--   `application/`: The main Rate Limiter Proxy service (Spring Boot WebFlux).
--   `demo/`: A sample backend service to test against.
--   `load_test.py`: Python script to simulate concurrent traffic.
-
-## ⚙️ Setup & Configuration
-
-### 1. Start Infrastructure
-Ensure Redis and RabbitMQ are running locally.
-
-### 2. Configure Rate Limits (Redis)
-You must define rate limits for your API keys in Redis using Hash maps.
-
-**Example**: API Key `test_api_key_1` with capacity 10 and refill rate 1 token/minute.
-
+### 1. Set the Rules (Redis)
+You need to tell FlowGate how many requests are allowed. Open your terminal and run:
 ```bash
-# Using redis-cli
-HSET api_key:test_api_key_1 capacity 10
-HSET api_key:test_api_key_1 refillRate 5
-HSET api_key:test_api_key_1 targetUrl http://localhost:9000
+# Allow 10 requests total, and add 5 new "tickets" every second
+hset api_key:MY_KEY capacity 10 refillRate 5 targetUrl http://localhost:9000
 ```
-*   `capacity`: Max burst size.
-*   `refillRate`: Tokens added per minute.
-*   `targetUrl`: The backend service URL for this key.
 
-### 3. Start the Backend Service (`demo`)
-Runs on port **9000**.
+### 2. Start the Backend (The Shop)
+This is what people are trying to reach.
 ```bash
 cd demo
-.\mvnw.cmd spring-boot:run
+./mvnw.cmd spring-boot:run
 ```
 
-### 4. Start the Rate Limiter Proxy (`application`)
-Runs on port **8080**.
+### 3. Start FlowGate (The Gatekeeper)
 ```bash
 cd application
-.\mvnw.cmd spring-boot:run
+./mvnw.cmd spring-boot:run
 ```
 
-## 🧪 Testing
+---
 
-### Using `load_test.py`
-We have provided a Python script to verify the behavior. It sends 20 concurrent requests.
-You should see:
--   Immediate `202 Accepted` for all requests.
--   The `application` logs will show requests being processed at the defined rate (e.g., 5 per minute).
+## 🧪 Let's Test It!
 
-```bash
-python load_test.py
+Open **PowerShell** and run this to send 20 requests at once:
+
+```powershell
+1..20 | ForEach-Object {
+    try {
+        $resp = Invoke-RestMethod -Uri "http://localhost:8080/proxy/orders" `
+                                  -Method Post `
+                                  -Headers @{"X-API-Key"="MY_KEY"}
+        Write-Host "Request SUCCESS!" -ForegroundColor Green
+    } catch {
+        Write-Host "Request REJECTED (Too fast!)" -ForegroundColor Red
+    }
+}
 ```
 
-### Using Postman
-1.  **Method**: `POST` (or GET, PUT, etc.)
-2.  **URL**: `http://localhost:8080/proxy/orders` (Proxies to `http://localhost:9000/orders`)
-3.  **Headers**:
-    -   `X-API-Key`: `test_api_key_1`
-    -   `Content-Type`: `application/json` (optional)
-4.  **Body**: Any JSON body (will be forwarded).
+### What you will see:
+-   **In PowerShell:** All requests will say "SUCCESS" because FlowGate accepted them into the queue.
+-   **In the Java Console:** You will see the requests being processed **slowly** (5 per second), exactly how you configured it!
 
-**Response**:
--   **Status**: `202 Accepted`
--   **Body**: `Request accepted and queued`
+---
 
-## 🔍 Behavior Observation
--   Use `docker stats` or Resource Monitor to watch RabbitMQ queue size grow during bursts.
--   Watch the console logs of `application` to see the "Processing..." messages tick by at the rate limit speed.
+## 📂 Project Folders
+-   📂 `application`: The brain (Gatekeeper).
+-   📂 `demo`: The target (The Shop).
+-   📂 `UserRateLimiter`: The Dashboard (UI).
 
-## ⚠️ Troubleshooting
--   **Redis Connection Refused**: Ensure Redis is running on port 6379.
--   **RabbitMQ Connection Refused**: Ensure RabbitMQ is running on port 5672.
--   **"Scaling Error: No config found"**: Make sure you added the Redis Hash for your API key.
-=======
-# FlowGate: Asynchronous Rate Limiter Proxy
-
-FlowGate is a high-performance, asynchronous API proxy designed to buffer burst traffic and enforce strict rate limits on backend services. It uses a **Producer-Consumer** architecture with **RabbitMQ** for buffering and **Redis (Lua Scripts)** for distributed token bucket rate limiting.
-
-## 🚀 Architecture
-
-1.  **Ingestion Layer (`proxyController`)**:
-    -   Receives incoming HTTP requests.
-    -   Immediately acknowledges with `202 Accepted`.
-    -   Publishes the request metadata (method, URL, headers, body) to a RabbitMQ queue.
-    -   **Scaling**: Can handle massive bursts of traffic without overwhelming the backend.
-
-2.  **Processing Layer (`ThrottleConsumer`)**:
-    -   Consumes messages from the queue.
-    -   **Throttling**: Checks Redis for available tokens for the specific API Key.
-    -   **Backoff**: If no tokens are available, it **blocks/waits** until the bucket refills.
-    -   **Forwarding**: Once allowed, forwards the request to the target backend service.
-
-3.  **Backend (`demo`)**:
-    -   The protected upstream service (e.g., Order System).
-
-## 🛠 Prerequisites
-
--   **Java 17+**
--   **Redis server** (running on `localhost:6379`)
--   **RabbitMQ server** (running on `localhost:5672`)
--   **Maven** (optional, wrapper included)
-
-## 📦 Project Structure
-
--   `application/`: The main Rate Limiter Proxy service (Spring Boot WebFlux).
--   `demo/`: A sample backend service to test against.
--   `load_test.py`: Python script to simulate concurrent traffic.
-
-## ⚙️ Setup & Configuration
-
-### 1. Start Infrastructure
-Ensure Redis and RabbitMQ are running locally.
-
-### 2. Configure Rate Limits (Redis)
-You must define rate limits for your API keys in Redis using Hash maps.
-
-**Example**: API Key `test_api_key_1` with capacity 10 and refill rate 1 token/minute.
-
-```bash
-# Using redis-cli
-HSET api_key:test_api_key_1 capacity 10
-HSET api_key:test_api_key_1 refillRate 5
-HSET api_key:test_api_key_1 targetUrl http://localhost:9000
-```
-*   `capacity`: Max burst size.
-*   `refillRate`: Tokens added per minute.
-*   `targetUrl`: The backend service URL for this key.
-
-### 3. Start the Backend Service (`demo`)
-Runs on port **9000**.
-```bash
-cd demo
-.\mvnw.cmd spring-boot:run
-```
-
-### 4. Start the Rate Limiter Proxy (`application`)
-Runs on port **8080**.
-```bash
-cd application
-.\mvnw.cmd spring-boot:run
-```
-
-## 🧪 Testing
-
-### Using `load_test.py`
-We have provided a Python script to verify the behavior. It sends 20 concurrent requests.
-You should see:
--   Immediate `202 Accepted` for all requests.
--   The `application` logs will show requests being processed at the defined rate (e.g., 5 per minute).
-
-```bash
-python load_test.py
-```
-
-### Using Postman
-1.  **Method**: `POST` (or GET, PUT, etc.)
-2.  **URL**: `http://localhost:8080/proxy/orders` (Proxies to `http://localhost:9000/orders`)
-3.  **Headers**:
-    -   `X-API-Key`: `test_api_key_1`
-    -   `Content-Type`: `application/json` (optional)
-4.  **Body**: Any JSON body (will be forwarded).
-
-**Response**:
--   **Status**: `202 Accepted`
--   **Body**: `Request accepted and queued`
-
-## 🔍 Behavior Observation
--   Use `docker stats` or Resource Monitor to watch RabbitMQ queue size grow during bursts.
--   Watch the console logs of `application` to see the "Processing..." messages tick by at the rate limit speed.
-
-## ⚠️ Troubleshooting
--   **Redis Connection Refused**: Ensure Redis is running on port 6379.
--   **RabbitMQ Connection Refused**: Ensure RabbitMQ is running on port 5672.
--   **"Scaling Error: No config found"**: Make sure you added the Redis Hash for your API key.
->>>>>>> 82bc5d3ff28310e6d53f29207c81ced09c150b47
+## ⚠️ Common Fixes
+-   **Connection Error?** Make sure Redis and RabbitMQ are running.
+-   **404 Not Found?** Make sure you are hitting `/proxy/orders` (matching the demo app).
