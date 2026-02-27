@@ -5,9 +5,11 @@ import ApiCard from "./ApiCard";
 export default function Dashboard({ onLogout }) {
     const [apis, setApis] = useState([]);
     const [name, setName] = useState("");
+    const [targetUrl, setTargetUrl] = useState("");
     const [capacity, setCapacity] = useState(10);
     const [refillRate, setRefillRate] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const loadApis = async () => {
         try {
@@ -23,10 +25,15 @@ export default function Dashboard({ onLogout }) {
     }, []);
 
     const handleCreate = async () => {
-        if (!name) return;
+        if (!name || !targetUrl) {
+            setError("API Name and Target URL are required.");
+            return;
+        }
+        setError("");
         setLoading(true);
-        await createApi(name, capacity, refillRate);
+        await createApi(name, targetUrl, capacity, refillRate);
         setName("");
+        setTargetUrl("");
         setLoading(false);
         loadApis();
     };
@@ -73,6 +80,16 @@ export default function Dashboard({ onLogout }) {
                                     onChange={e => setName(e.target.value)}
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-1">Target URL</label>
+                                <input
+                                    className="input-field"
+                                    placeholder="e.g. https://my-backend.com"
+                                    value={targetUrl}
+                                    onChange={e => setTargetUrl(e.target.value)}
+                                />
+                                <p className="text-slate-500 text-xs mt-1">The base URL of your backend service</p>
+                            </div>
                         </div>
 
                         <div className="space-y-4">
@@ -98,6 +115,9 @@ export default function Dashboard({ onLogout }) {
                             </div>
                         </div>
                     </div>
+                    {error && (
+                        <p className="text-red-400 text-sm mt-3">{error}</p>
+                    )}
                     <div className="mt-6 flex justify-end">
                         <button
                             onClick={handleCreate}
@@ -123,7 +143,7 @@ export default function Dashboard({ onLogout }) {
                         <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
                             <p className="text-slate-400 text-xs mb-1">Proxy Base URL</p>
                             <code className="text-emerald-400">
-                                http://localhost:8080/proxy
+                                http://localhost/proxy
                             </code>
                         </div>
 

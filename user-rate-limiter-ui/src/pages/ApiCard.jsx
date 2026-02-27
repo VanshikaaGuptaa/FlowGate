@@ -37,6 +37,9 @@ export default function ApiCard({ api }) {
       <div className="space-y-2 text-sm text-slate-300">
         <p><b>Capacity:</b> {api.capacity}</p>
         <p><b>Refill:</b> {api.refillRate}/sec</p>
+        {api.targetUrl && (
+          <p className="truncate"><b>Target:</b> <span className="text-slate-400">{api.targetUrl}</span></p>
+        )}
       </div>
 
       {/* API Key */}

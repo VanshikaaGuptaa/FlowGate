@@ -1,0 +1,7 @@
+# FlowGate root .gitignore
+.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
