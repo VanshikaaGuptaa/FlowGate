@@ -38,7 +38,7 @@ export default function Dashboard({ onLogout }) {
                     <div className="flex justify-between h-16 items-center">
                         <div className="flex items-center">
                             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
-                                RateLimiter Hub
+                                FlowGate
                             </span>
                         </div>
                         <button
@@ -108,36 +108,36 @@ export default function Dashboard({ onLogout }) {
                         </button>
                     </div>
                 </section>
-<section className="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl mb-12">
-  <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-    <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
-    How to Use Your APIs
-  </h2>
+                <section className="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl mb-12">
+                    <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
+                        How to Use Your APIs
+                    </h2>
 
-  <div className="space-y-4 text-slate-300 text-sm leading-relaxed">
-    <p>
-      All requests to your backend must be routed through our proxy.
-      We enforce rate limits before forwarding requests to your service.
-    </p>
+                    <div className="space-y-4 text-slate-300 text-sm leading-relaxed">
+                        <p>
+                            All requests to your backend must be routed through our proxy.
+                            We enforce rate limits before forwarding requests to your service.
+                        </p>
 
-    <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-      <p className="text-slate-400 text-xs mb-1">Proxy Base URL</p>
-      <code className="text-emerald-400">
-        http://localhost:8080/proxy
-      </code>
-    </div>
+                        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                            <p className="text-slate-400 text-xs mb-1">Proxy Base URL</p>
+                            <code className="text-emerald-400">
+                                http://localhost:8080/proxy
+                            </code>
+                        </div>
 
-    <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-      <p className="text-slate-400 text-xs mb-1">Required Header</p>
-      <code className="text-blue-400">
-        X-API-Key: {"<your-api-key>"}
-      </code>
-    </div>
+                        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                            <p className="text-slate-400 text-xs mb-1">Required Header</p>
+                            <code className="text-blue-400">
+                                X-API-Key: {"<your-api-key>"}
+                            </code>
+                        </div>
 
-    <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-      <p className="text-slate-400 text-xs mb-2">Example</p>
-      <pre className="text-slate-200 text-xs overflow-x-auto">
-{`POST http://localhost:8080/proxy
+                        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                            <p className="text-slate-400 text-xs mb-2">Example</p>
+                            <pre className="text-slate-200 text-xs overflow-x-auto">
+                                {`POST http://localhost:8080/proxy
 X-API-Key: <your-api-key>
 Content-Type: application/json
 
@@ -146,15 +146,15 @@ Content-Type: application/json
   "method": "POST",
   "data":   { "item": "book", "qty": 1 }
 }`}
-      </pre>
-    </div>
+                            </pre>
+                        </div>
 
-    <p className="text-slate-400 text-sm">
-      Send any endpoint as <code className="text-slate-200">"path"</code> in
-      the JSON body. FlowGate will forward it to your backend.
-    </p>
-  </div>
-</section>
+                        <p className="text-slate-400 text-sm">
+                            Send any endpoint as <code className="text-slate-200">"path"</code> in
+                            the JSON body. FlowGate will forward it to your backend.
+                        </p>
+                    </div>
+                </section>
 
                 <section>
                     <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
