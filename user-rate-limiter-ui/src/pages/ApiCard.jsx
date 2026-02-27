@@ -35,7 +35,6 @@ export default function ApiCard({ api }) {
 
       {/* Details */}
       <div className="space-y-2 text-sm text-slate-300">
-        <p><b>Target:</b> {api.targetUrl}</p>
         <p><b>Capacity:</b> {api.capacity}</p>
         <p><b>Refill:</b> {api.refillRate}/sec</p>
       </div>
@@ -52,7 +51,7 @@ export default function ApiCard({ api }) {
       <div className="mt-3 bg-slate-900 rounded-lg p-3 border border-slate-700">
         <p className="text-slate-400 text-xs mb-1">Usage</p>
         <code className="text-emerald-400 text-xs">
-          http://localhost:8080/proxy/&lt;endpoint&gt;
+          POST /proxy  +  {'{"path": "/your-endpoint"}'}
         </code>
       </div>
     </div>

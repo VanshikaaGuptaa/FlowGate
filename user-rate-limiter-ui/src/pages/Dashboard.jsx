@@ -5,7 +5,6 @@ import ApiCard from "./ApiCard";
 export default function Dashboard({ onLogout }) {
     const [apis, setApis] = useState([]);
     const [name, setName] = useState("");
-    const [targetUrl, setTargetUrl] = useState("");
     const [capacity, setCapacity] = useState(10);
     const [refillRate, setRefillRate] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -24,11 +23,10 @@ export default function Dashboard({ onLogout }) {
     }, []);
 
     const handleCreate = async () => {
-        if (!name || !targetUrl) return;
+        if (!name) return;
         setLoading(true);
-        await createApi(name, targetUrl, capacity, refillRate);
+        await createApi(name, capacity, refillRate);
         setName("");
-        setTargetUrl("");
         setLoading(false);
         loadApis();
     };
@@ -73,15 +71,6 @@ export default function Dashboard({ onLogout }) {
                                     placeholder="e.g. Production Service"
                                     value={name}
                                     onChange={e => setName(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Target URL</label>
-                                <input
-                                    className="input-field"
-                                    placeholder="http://localhost:9000"
-                                    value={targetUrl}
-                                    onChange={e => setTargetUrl(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -148,20 +137,21 @@ export default function Dashboard({ onLogout }) {
     <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
       <p className="text-slate-400 text-xs mb-2">Example</p>
       <pre className="text-slate-200 text-xs overflow-x-auto">
-{`POST http://localhost:8080/proxy/orders
+{`POST http://localhost:8080/proxy
 X-API-Key: <your-api-key>
 Content-Type: application/json
 
 {
-  "item": "book",
-  "qty": 1
+  "path":   "/orders",
+  "method": "POST",
+  "data":   { "item": "book", "qty": 1 }
 }`}
       </pre>
     </div>
 
     <p className="text-slate-400 text-sm">
-      Any path after <code className="text-slate-200">/proxy</code> is forwarded
-      to the same path on your target URL.
+      Send any endpoint as <code className="text-slate-200">"path"</code> in
+      the JSON body. FlowGate will forward it to your backend.
     </p>
   </div>
 </section>
