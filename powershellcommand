@@ -4,7 +4,7 @@
         $body = @{ path = "/orders"; method = "POST"; data = @{ item = "book"; qty = 2 } } | ConvertTo-Json
         $resp = Invoke-RestMethod -Uri "http://localhost:8080/proxy" `
                                   -Method Post `
-                                  -Headers @{"X-API-Key"="11d0913d-dfa9-4ba3-a2ad-63f7210e42e3"} `
+                                  -Headers @{"X-API-Key"="API KEY"} `
                                   -Body $body `
                                   -ContentType "application/json"
         Write-Host "Request ${id}: Queued - $resp" -ForegroundColor Green
