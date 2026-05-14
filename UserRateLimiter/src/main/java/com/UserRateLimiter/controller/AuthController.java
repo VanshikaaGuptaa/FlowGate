@@ -15,7 +15,11 @@ import com.UserRateLimiter.service.AuthService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5173", maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:5173",
+    "http://flowgate.website",
+    "https://flowgate.website",
+    "http://www.flowgate.website",
+    "https://www.flowgate.website"}, maxAge = 3600)
 public class AuthController {
 
     private final AuthService authService;

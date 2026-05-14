@@ -18,7 +18,11 @@ import com.UserRateLimiter.payload.CreateApiRequest;
 
 @RestController
 @RequestMapping("/apis")
-@CrossOrigin(origins = "http://localhost:5173", maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:5173",
+    "http://flowgate.website",
+    "https://flowgate.website",
+    "http://www.flowgate.website",
+    "https://www.flowgate.website"}, maxAge = 3600)
 public class ApiController {
 
     private final ApiService apiService;
