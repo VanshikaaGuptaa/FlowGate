@@ -138,12 +138,13 @@ export default function Dashboard({ onLogout }) {
                         <p>
                             All requests to your backend must be routed through our proxy.
                             We enforce rate limits before forwarding requests to your service.
+                            Note: The maximum requests limit to our proxy is 50 requests per second, the exceeded requests get rejected and not queued
                         </p>
 
                         <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
                             <p className="text-slate-400 text-xs mb-1">Proxy Base URL</p>
                             <code className="text-emerald-400">
-                                http://localhost/proxy
+                                https://flowgate.website/proxy
                             </code>
                         </div>
 
@@ -157,21 +158,45 @@ export default function Dashboard({ onLogout }) {
                         <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
                             <p className="text-slate-400 text-xs mb-2">Example</p>
                             <pre className="text-slate-200 text-xs overflow-x-auto">
-                                {`POST http://localhost:8080/proxy
+                                {`POST https://flowgate.website/proxy
 X-API-Key: <your-api-key>
 Content-Type: application/json
 
 {
   "path":   "/orders",
-  "method": "POST",
-  "data":   { "item": "book", "qty": 1 }
+  "method": "GET",
+  "data":   {}
 }`}
+                            </pre>
+                        </div>
+
+                        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                            <p className="text-slate-400 text-xs mb-2">PowerShell Load Test Script</p>
+                            <pre className="text-slate-200 text-xs overflow-x-auto">
+                                {"1..20 | ForEach-Object {\n" +
+                                 "    $id = $_\n" +
+                                 "    try {\n" +
+                                 "        $body = @{ path = \"/orders\"; method = \"POST\"; data = @{ item = \"book\"; qty = 2 } } | ConvertTo-Json\n" +
+                                 "        $resp = Invoke-RestMethod -Uri \"https://flowgate.website/proxy\" `\n" +
+                                 "                                  -Method Post `\n" +
+                                 "                                  -Headers @{\"X-API-Key\"=\"<your-api-key>\"} `\n" +
+                                 "                                  -Body $body `\n" +
+                                 "                                  -ContentType \"application/json\"\n" +
+                                 "        Write-Host \"Request ${id}: Queued - $resp\" -ForegroundColor Green\n" +
+                                 "    } catch {\n" +
+                                 "        $statusCode = $_.Exception.Response.StatusCode.value__\n" +
+                                 "        Write-Host \"Request ${id}: Failed ($statusCode)\" -ForegroundColor Yellow\n" +
+                                 "    }\n" +
+                                 "}"}
                             </pre>
                         </div>
 
                         <p className="text-slate-400 text-sm">
                             Send any endpoint as <code className="text-slate-200">"path"</code> in
-                            the JSON body. FlowGate will forward it to your backend.
+                            the JSON body. FlowGate will forward it to your backend. <br />
+                            <span className="text-emerald-400 mt-2 inline-block">
+                                💡 <strong>Demo:</strong> To try our application using the demo running on this instance, set your Target URL to <code>http://172.17.0.1:9000</code> and use <code>/orders</code> as the path.
+                            </span>
                         </p>
                     </div>
                 </section>
