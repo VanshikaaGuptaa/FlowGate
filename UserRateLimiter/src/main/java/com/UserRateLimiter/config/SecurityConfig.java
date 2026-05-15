@@ -52,7 +52,8 @@ public class SecurityConfig {
                 "http://flowgate.website",
                 "https://flowgate.website",
                 "http://www.flowgate.website",
-                "https://www.flowgate.website"));
+                "https://www.flowgate.website",
+                "https://ec2-18-207-124-88.compute-1.amazonaws.com"));
 
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
