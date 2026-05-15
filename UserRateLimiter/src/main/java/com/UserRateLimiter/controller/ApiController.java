@@ -23,7 +23,7 @@ import com.UserRateLimiter.payload.CreateApiRequest;
     "https://flowgate.website",
     "http://www.flowgate.website",
     "https://www.flowgate.website",
-    "https://ec2-18-207-124-88.compute-1.amazonaws.com/"}, maxAge = 3600)
+    "https://ec2-18-207-124-88.compute-1.amazonaws.com"}, maxAge = 3600)
 public class ApiController {
 
     private final ApiService apiService;
