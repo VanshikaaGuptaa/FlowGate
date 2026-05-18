@@ -9,3 +9,6 @@ export const createApi = (name, targetUrl, capacity, refillRate) =>
     capacity,
     refillRate
   });
+
+export const deleteApi = (id) => api.delete(`/apis/${id}`);
+

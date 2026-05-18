@@ -1,4 +1,28 @@
-export default function ApiCard({ api }) {
+import { useState } from "react";
+import { deleteApi } from "../api/apiApi";
+
+export default function ApiCard({ api, onDeleteSuccess }) {
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm(`Are you sure you want to delete the API "${api.name}"? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setError("");
+
+    try {
+      await deleteApi(api.id);
+      if (onDeleteSuccess) {
+        onDeleteSuccess();
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || "Failed to delete API.");
+      setDeleting(false);
+    }
+  };
 
   const statusStyles = {
     ACTIVE: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -35,7 +59,6 @@ export default function ApiCard({ api }) {
 
       {/* Details */}
       <div className="space-y-2 text-sm text-slate-300">
-        <p><b>Capacity:</b> {api.capacity}</p>
         <p><b>Refill:</b> {api.refillRate}/sec</p>
         {api.targetUrl && (
           <p className="truncate"><b>Target:</b> <span className="text-slate-400">{api.targetUrl}</span></p>
@@ -56,6 +79,21 @@ export default function ApiCard({ api }) {
         <code className="text-emerald-400 text-xs">
           POST /proxy
         </code>
+      </div>
+
+      {error && (
+        <p className="text-red-400 text-xs mt-3 text-right">{error}</p>
+      )}
+
+      {/* Action Bar */}
+      <div className="mt-4 pt-3 border-t border-slate-700 flex justify-end">
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          className="px-3 py-1.5 text-xs font-semibold text-red-400 hover:text-white hover:bg-red-600/30 rounded-lg border border-red-500/20 hover:border-red-500/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {deleting ? "Deleting..." : "Delete API"}
+        </button>
       </div>
     </div>
   );

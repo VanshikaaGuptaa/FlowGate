@@ -68,4 +68,21 @@ public class ApiService {
     public boolean isRateLimited(String apiKey) {
         return Boolean.TRUE.equals(redis.hasKey("throttle:" + apiKey));
     }
+
+    public void deleteApi(String email, Long id) {
+        ApiDefinition api = apiRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("API not found"));
+
+        if (!api.getUser().getEmail().equals(email)) {
+            throw new SecurityException("Unauthorized to delete this API");
+        }
+
+        // Clean up from Redis
+        String apiKey = api.getApiKey();
+        redis.delete("api_key:" + apiKey);
+        redis.delete("rate_limit:" + apiKey);
+        redis.delete("throttle:" + apiKey);
+
+        apiRepo.delete(api);
+    }
 }

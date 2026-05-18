@@ -225,7 +225,7 @@ Content-Type: application/json
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {apis.map(api => (
-                                <ApiCard key={api.id} api={api} />
+                                <ApiCard key={api.id} api={api} onDeleteSuccess={loadApis} />
                             ))}
                         </div>
                     )}

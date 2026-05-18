@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +21,7 @@ import com.UserRateLimiter.payload.CreateApiRequest;
 @RestController
 @RequestMapping("/apis")
 @CrossOrigin(origins = {"http://localhost:5173",
+    "http://localhost:3000",
     "http://flowgate.website",
     "https://flowgate.website",
     "http://www.flowgate.website",
@@ -79,5 +82,15 @@ public class ApiController {
                     "refillRate", api.getRefillRate(),
                     "status", status);
         }).toList();
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        String email = (String) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        apiService.deleteApi(email, id);
     }
 }
