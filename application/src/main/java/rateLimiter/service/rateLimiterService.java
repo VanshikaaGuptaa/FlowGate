@@ -26,7 +26,7 @@ public class rateLimiterService {
         return isAllowed(apiKey, CAPACITY, REFILL_RATE);
     }
 
-    public boolean isAllowed(String apiKey, int capacity, int refillRate) {
+    public boolean isAllowed(String apiKey, double capacity, double refillRate) {
         List<Long> result = redisTemplate.execute(
                 rateLimiterScript,
                 Collections.singletonList("rate_limit:" + apiKey),

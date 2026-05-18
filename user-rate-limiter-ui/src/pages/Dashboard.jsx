@@ -6,8 +6,7 @@ export default function Dashboard({ onLogout }) {
     const [apis, setApis] = useState([]);
     const [name, setName] = useState("");
     const [targetUrl, setTargetUrl] = useState("");
-    const [capacity, setCapacity] = useState(10);
-    const [refillRate, setRefillRate] = useState(1);
+    const [requestsPerSecond, setRequestsPerSecond] = useState("1");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -29,13 +28,32 @@ export default function Dashboard({ onLogout }) {
             setError("API Name and Target URL are required.");
             return;
         }
+
+        const rpsVal = parseFloat(requestsPerSecond);
+        if (isNaN(rpsVal) || rpsVal <= 0) {
+            setError("Requests per second must be a positive number.");
+            return;
+        }
+
         setError("");
         setLoading(true);
-        await createApi(name, targetUrl, capacity, refillRate);
-        setName("");
-        setTargetUrl("");
-        setLoading(false);
-        loadApis();
+
+        try {
+            // Calculate capacity and refillRate
+            const calculatedRefillRate = rpsVal;
+            const calculatedCapacity = Math.max(1.0, rpsVal);
+
+            await createApi(name, targetUrl, calculatedCapacity, calculatedRefillRate);
+            setName("");
+            setTargetUrl("");
+            setRequestsPerSecond("1");
+            loadApis();
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.message || "Failed to create API. Please check backend connection.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -92,26 +110,20 @@ export default function Dashboard({ onLogout }) {
                             </div>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 flex flex-col justify-center">
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Capacity</label>
+                                <label className="block text-sm font-medium text-slate-300 mb-1">Requests per Second (RPS)</label>
                                 <input
                                     type="number"
+                                    step="any"
                                     className="input-field"
-                                    placeholder="Max Requests"
-                                    value={capacity}
-                                    onChange={e => setCapacity(e.target.value)}
+                                    placeholder="e.g. 5, 0.5, 0.001"
+                                    value={requestsPerSecond}
+                                    onChange={e => setRequestsPerSecond(e.target.value)}
                                 />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Refill Rate</label>
-                                <input
-                                    type="number"
-                                    className="input-field"
-                                    placeholder="Tokens per second"
-                                    value={refillRate}
-                                    onChange={e => setRefillRate(e.target.value)}
-                                />
+                                <p className="text-slate-500 text-xs mt-1">
+                                    Supports decimal values (e.g. 0.001 for 1 request every 1000 seconds)
+                                </p>
                             </div>
                         </div>
                     </div>

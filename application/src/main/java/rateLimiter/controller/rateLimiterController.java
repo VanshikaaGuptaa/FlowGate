@@ -20,8 +20,8 @@ public class rateLimiterController {
     @PostMapping("/check")
     public ResponseEntity<Map<String, Object>> check(
             @RequestParam String key,
-            @RequestParam(defaultValue = "10") int capacity,
-            @RequestParam(defaultValue = "1") int refillRate) {
+            @RequestParam(defaultValue = "10.0") double capacity,
+            @RequestParam(defaultValue = "1.0") double refillRate) {
 
         boolean allowed = rateLimiterService.isAllowed(key, capacity, refillRate);
 

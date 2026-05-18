@@ -44,22 +44,24 @@ public class ThrottleConsumer {
 
             if (capObj == null || rateObj == null) {
                 System.err.println("Scaling Error: Missing capacity/refillRate for API key: " + apiKey);
+                
                 return;
             }
 
-            int capacity = Integer.parseInt(capObj.toString());
-            int refillRate = Integer.parseInt(rateObj.toString());
+            double capacity = Double.parseDouble(capObj.toString());
+            double refillRate = Double.parseDouble(rateObj.toString());
 
             // Wait until token is available
-            if (!rateLimiter.isAllowed(apiKey, capacity, refillRate)) {
+            boolean allowed = rateLimiter.isAllowed(apiKey, capacity, refillRate);
+            if (!allowed) {
                 System.out.println("[" + LocalDateTime.now() + "] Bucket empty. Waiting...");
-            }
-            while (!rateLimiter.isAllowed(apiKey, capacity, refillRate)) {
-                try {
-                    Thread.sleep(100); // backoff
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
+                while (!rateLimiter.isAllowed(apiKey, capacity, refillRate)) {
+                    try {
+                        Thread.sleep(100); // backoff
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
                 }
             }
 

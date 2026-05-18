@@ -30,8 +30,8 @@ public class ApiService {
             String email,
             String name,
             String targetUrl,
-            int capacity,
-            int refillRate) {
+            double capacity,
+            double refillRate) {
 
         User user = userRepo.findByEmail(email).orElseThrow();
 

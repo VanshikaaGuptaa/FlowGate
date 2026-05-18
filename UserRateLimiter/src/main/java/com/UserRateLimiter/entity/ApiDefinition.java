@@ -15,8 +15,8 @@ public class ApiDefinition {
     private String name;
     private String apiKey;
     private String targetUrl;
-    private int capacity;
-    private int refillRate;
+    private double capacity;
+    private double refillRate;
 
     @ManyToOne
     private User user;
@@ -53,19 +53,19 @@ public class ApiDefinition {
         this.targetUrl = targetUrl;
     }
 
-    public int getCapacity() {
+    public double getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(int capacity) {
+    public void setCapacity(double capacity) {
         this.capacity = capacity;
     }
 
-    public int getRefillRate() {
+    public double getRefillRate() {
         return refillRate;
     }
 
-    public void setRefillRate(int refillRate) {
+    public void setRefillRate(double refillRate) {
         this.refillRate = refillRate;
     }
 
