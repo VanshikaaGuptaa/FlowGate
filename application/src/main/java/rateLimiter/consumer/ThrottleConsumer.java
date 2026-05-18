@@ -1,5 +1,6 @@
 package rateLimiter.consumer;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -51,7 +52,7 @@ public class ThrottleConsumer {
 
             // Wait until token is available
             if (!rateLimiter.isAllowed(apiKey, capacity, refillRate)) {
-                System.out.println("--- [WORKER] Bucket empty for " + apiKey + ". Waiting for tokens...");
+                System.out.println("[" + LocalDateTime.now() + "] Bucket empty. Waiting...");
             }
             while (!rateLimiter.isAllowed(apiKey, capacity, refillRate)) {
                 try {
@@ -71,7 +72,7 @@ public class ThrottleConsumer {
                     .toBodilessEntity()
                     .block(); // ensures order
 
-            System.out.println("Processed: " + url);
+           System.out.println("[" + LocalDateTime.now() + "] Processed: " + url);
         } catch (Exception e) {
             System.err.println("Error processing message: " + e.getMessage());
             e.printStackTrace();

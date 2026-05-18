@@ -174,20 +174,20 @@ Content-Type: application/json
                             <p className="text-slate-400 text-xs mb-2">PowerShell Load Test Script</p>
                             <pre className="text-slate-200 text-xs overflow-x-auto">
                                 {"1..20 | ForEach-Object {\n" +
-                                 "    $id = $_\n" +
-                                 "    try {\n" +
-                                 "        $body = @{ path = \"/orders\"; method = \"POST\"; data = @{ item = \"book\"; qty = 2 } } | ConvertTo-Json\n" +
-                                 "        $resp = Invoke-RestMethod -Uri \"https://flowgate.website/proxy\" `\n" +
-                                 "                                  -Method Post `\n" +
-                                 "                                  -Headers @{\"X-API-Key\"=\"<your-api-key>\"} `\n" +
-                                 "                                  -Body $body `\n" +
-                                 "                                  -ContentType \"application/json\"\n" +
-                                 "        Write-Host \"Request ${id}: Queued - $resp\" -ForegroundColor Green\n" +
-                                 "    } catch {\n" +
-                                 "        $statusCode = $_.Exception.Response.StatusCode.value__\n" +
-                                 "        Write-Host \"Request ${id}: Failed ($statusCode)\" -ForegroundColor Yellow\n" +
-                                 "    }\n" +
-                                 "}"}
+                                    "    $id = $_\n" +
+                                    "    try {\n" +
+                                    "        $body = @{ path = \"/orders\"; method = \"POST\"; data = @{ item = \"book\"; qty = 2 } } | ConvertTo-Json\n" +
+                                    "        $resp = Invoke-RestMethod -Uri \"https://flowgate.website/proxy\" `\n" +
+                                    "                                  -Method Post `\n" +
+                                    "                                  -Headers @{\"X-API-Key\"=\"<your-api-key>\"} `\n" +
+                                    "                                  -Body $body `\n" +
+                                    "                                  -ContentType \"application/json\"\n" +
+                                    "        Write-Host \"Request ${id}: Queued - $resp\" -ForegroundColor Green\n" +
+                                    "    } catch {\n" +
+                                    "        $statusCode = $_.Exception.Response.StatusCode.value__\n" +
+                                    "        Write-Host \"Request ${id}: Failed ($statusCode)\" -ForegroundColor Yellow\n" +
+                                    "    }\n" +
+                                    "}"}
                             </pre>
                         </div>
 
