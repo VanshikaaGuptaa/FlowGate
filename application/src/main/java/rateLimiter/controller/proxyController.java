@@ -113,6 +113,16 @@ public class proxyController {
         System.out.println("Method   : " + method);
 
         // ── 7. Enqueue and return 202 ───────────────────────────────────────
+        try {
+            long second = System.currentTimeMillis() / 1000;
+            String incomingKey = "metrics:incoming:" + apiKey + ":" + second;
+            redis.opsForValue().increment(incomingKey);
+            redis.expire(incomingKey, java.time.Duration.ofSeconds(15));
+            redis.opsForValue().increment("queue_depth:" + apiKey);
+        } catch (Exception e) {
+            System.err.println("Failed to record metrics in Redis: " + e.getMessage());
+        }
+
         ThrottleRequest msg = new ThrottleRequest(apiKey, method, targetUrl, path, bodyBytes);
         throttlePublisher.publish(msg);
 

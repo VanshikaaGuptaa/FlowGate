@@ -33,6 +33,9 @@ public class RedisStartupCleaner implements ApplicationRunner {
 
         deletePattern("rate_limit:*");
         deletePattern("throttle:*");
+        deletePattern("queue_depth:*");
+        deletePattern("metrics:incoming:*");
+        deletePattern("metrics:outgoing:*");
         redis.delete("global:rps");
 
         System.out.println("[STARTUP] Redis rate-limit state cleared. Ready.");

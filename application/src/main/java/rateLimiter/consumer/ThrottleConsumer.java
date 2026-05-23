@@ -65,6 +65,16 @@ public class ThrottleConsumer {
                 }
             }
 
+            try {
+                long second = System.currentTimeMillis() / 1000;
+                String outgoingKey = "metrics:outgoing:" + apiKey + ":" + second;
+                redis.opsForValue().increment(outgoingKey);
+                redis.expire(outgoingKey, java.time.Duration.ofSeconds(15));
+                redis.opsForValue().decrement("queue_depth:" + apiKey);
+            } catch (Exception e) {
+                System.err.println("Failed to update consumer metrics in Redis: " + e.getMessage());
+            }
+
             String url = msg.getTargetUrl() + msg.getPath();
 
             webClient.method(HttpMethod.valueOf(msg.getMethod()))

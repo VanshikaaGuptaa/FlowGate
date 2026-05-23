@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getApis, createApi } from "../api/apiApi";
 import ApiCard from "./ApiCard";
 
-export default function Dashboard({ onLogout }) {
+export default function Dashboard({ onLogout, onSelectApi }) {
     const [apis, setApis] = useState([]);
     const [name, setName] = useState("");
     const [targetUrl, setTargetUrl] = useState("");
@@ -182,26 +182,7 @@ Content-Type: application/json
                             </pre>
                         </div>
 
-                        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-                            <p className="text-slate-400 text-xs mb-2">PowerShell Load Test Script</p>
-                            <pre className="text-slate-200 text-xs overflow-x-auto">
-                                {"1..20 | ForEach-Object {\n" +
-                                    "    $id = $_\n" +
-                                    "    try {\n" +
-                                    "        $body = @{ path = \"/orders\"; method = \"POST\"; data = @{ item = \"book\"; qty = 2 } } | ConvertTo-Json\n" +
-                                    "        $resp = Invoke-RestMethod -Uri \"https://flowgate.website/proxy\" `\n" +
-                                    "                                  -Method Post `\n" +
-                                    "                                  -Headers @{\"X-API-Key\"=\"<your-api-key>\"} `\n" +
-                                    "                                  -Body $body `\n" +
-                                    "                                  -ContentType \"application/json\"\n" +
-                                    "        Write-Host \"Request ${id}: Queued - $resp\" -ForegroundColor Green\n" +
-                                    "    } catch {\n" +
-                                    "        $statusCode = $_.Exception.Response.StatusCode.value__\n" +
-                                    "        Write-Host \"Request ${id}: Failed ($statusCode)\" -ForegroundColor Yellow\n" +
-                                    "    }\n" +
-                                    "}"}
-                            </pre>
-                        </div>
+                        
 
                         <p className="text-slate-400 text-sm">
                             Send any endpoint as <code className="text-slate-200">"path"</code> in
@@ -225,7 +206,12 @@ Content-Type: application/json
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {apis.map(api => (
-                                <ApiCard key={api.id} api={api} onDeleteSuccess={loadApis} />
+                                <ApiCard 
+                                    key={api.id} 
+                                    api={api} 
+                                    onDeleteSuccess={loadApis} 
+                                    onClick={() => onSelectApi(api)} 
+                                />
                             ))}
                         </div>
                     )}

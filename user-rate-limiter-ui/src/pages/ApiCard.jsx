@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { deleteApi } from "../api/apiApi";
 
-export default function ApiCard({ api, onDeleteSuccess }) {
+export default function ApiCard({ api, onDeleteSuccess, onClick }) {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
-  const handleDelete = async () => {
+  const handleDelete = async (e) => {
+    e.stopPropagation();
     const confirmed = window.confirm(`Are you sure you want to delete the API "${api.name}"? This action cannot be undone.`);
     if (!confirmed) return;
 
@@ -35,20 +36,28 @@ export default function ApiCard({ api, onDeleteSuccess }) {
     "bg-slate-500/20 text-slate-400 border-slate-500/30";
 
   return (
-    <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl">
+    <div
+      onClick={onClick}
+      className="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl cursor-pointer hover:border-indigo-500/60 hover:shadow-2xl hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition-all duration-350 flex flex-col justify-between"
+    >
+      <div>
+        {/* Header */}
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-white">
+              {api.name}
+            </h3>
+            <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider flex items-center gap-1 mt-0.5">
+              📊 View Live Metrics ➔
+            </span>
+          </div>
 
-      {/* Header */}
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-semibold text-white">
-          {api.name}
-        </h3>
-
-        <span
-          className={`px-3 py-1 text-xs font-semibold rounded-full border ${statusStyle}`}
-        >
-          {api.status.replace("_", " ")}
-        </span>
-      </div>
+          <span
+            className={`px-3 py-1 text-xs font-semibold rounded-full border ${statusStyle}`}
+          >
+            {api.status.replace("_", " ")}
+          </span>
+        </div>
 
       {/* Optional rate-limited hint */}
       {api.status === "RATE_LIMITED" && (
@@ -84,6 +93,8 @@ export default function ApiCard({ api, onDeleteSuccess }) {
       {error && (
         <p className="text-red-400 text-xs mt-3 text-right">{error}</p>
       )}
+
+      </div>
 
       {/* Action Bar */}
       <div className="mt-4 pt-3 border-t border-slate-700 flex justify-end">
