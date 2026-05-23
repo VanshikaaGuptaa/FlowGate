@@ -14,6 +14,10 @@ export default function MetricsPage({ api, onBack }) {
   const wsRef = useRef(null);
   const [scriptTab, setScriptTab] = useState("powershell");
 
+  const targetProxyUrl = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8080/proxy"
+    : `${window.location.origin}/proxy`;
+
   // Initialize flat history for 30 data points to give a smooth rolling start
   useEffect(() => {
     const initialCapacity = api.capacity || 10;
@@ -32,8 +36,18 @@ export default function MetricsPage({ api, onBack }) {
 
   // Connect to WebSocket
   useEffect(() => {
-    const wsBaseURL = (import.meta.env.VITE_API_URL ?? "http://localhost:8000")
-      .replace(/^http/, "ws");
+    let wsBaseURL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+
+    // If VITE_API_URL is relative (e.g. starts with "/" or does not contain "://")
+    if (wsBaseURL.startsWith("/") || !wsBaseURL.includes("://")) {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const host = window.location.host; // resolves e.g., flowgate.website or localhost:3000
+      const basePath = wsBaseURL.startsWith("/") ? wsBaseURL : `/${wsBaseURL}`;
+      wsBaseURL = `${protocol}//${host}${basePath}`;
+    } else {
+      wsBaseURL = wsBaseURL.replace(/^http/, "ws");
+    }
+
     const wsURL = `${wsBaseURL}/ws/metrics/${api.apiKey}`;
 
     console.log("Connecting to WebSocket:", wsURL);
@@ -446,7 +460,7 @@ export default function MetricsPage({ api, onBack }) {
       data = @{ item = "book"; qty = 2 } 
     } | ConvertTo-Json
     $resp = Invoke-RestMethod \`
-      -Uri "https://flowgate.website/proxy" \`
+      -Uri "${targetProxyUrl}" \`
       -Method Post \`
       -Headers @{"X-API-Key"="${api.apiKey}"} \`
       -Body $body \`
@@ -457,7 +471,7 @@ export default function MetricsPage({ api, onBack }) {
   }
 }`
                 ) : (
-`for i in {1..20}; do curl -s -X POST "https://flowgate.website/proxy" -H "X-API-Key: ${api.apiKey}" -H "Content-Type: application/json" -d '{"path": "/orders", "method": "POST", "data": {"item": "book", "qty": 2}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`
+`for i in {1..20}; do curl -s -X POST "${targetProxyUrl}" -H "X-API-Key: ${api.apiKey}" -H "Content-Type: application/json" -d '{"path": "/orders", "method": "POST", "data": {"item": "book", "qty": 2}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`
                 )}
               </pre>
             </div>
@@ -474,7 +488,7 @@ export default function MetricsPage({ api, onBack }) {
       data = @{ item = "book"; qty = 2 } 
     } | ConvertTo-Json
     $resp = Invoke-RestMethod \`
-      -Uri "https://flowgate.website/proxy" \`
+      -Uri "${targetProxyUrl}" \`
       -Method Post \`
       -Headers @{"X-API-Key"="${api.apiKey}"} \`
       -Body $body \`
@@ -485,7 +499,7 @@ export default function MetricsPage({ api, onBack }) {
   }
 }`
                 ) : (
-`for i in {1..20}; do curl -s -X POST "https://flowgate.website/proxy" -H "X-API-Key: ${api.apiKey}" -H "Content-Type: application/json" -d '{"path": "/orders", "method": "POST", "data": {"item": "book", "qty": 2}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`
+`for i in {1..20}; do curl -s -X POST "${targetProxyUrl}" -H "X-API-Key: ${api.apiKey}" -H "Content-Type: application/json" -d '{"path": "/orders", "method": "POST", "data": {"item": "book", "qty": 2}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`
                 );
                 navigator.clipboard.writeText(scriptText);
                 alert(`${scriptTab === "powershell" ? "PowerShell" : "Bash/cURL"} script copied to clipboard!`);
