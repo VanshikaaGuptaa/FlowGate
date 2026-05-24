@@ -453,23 +453,22 @@ export default function MetricsPage({ api, onBack }) {
                 {scriptTab === "powershell" ? (
 `1..20 | ForEach-Object {
   $id = $_
-  try {
-    $body = @{ 
-      path = "/orders"
-      method = "POST"
-      data = @{ item = "book"; qty = 2 } 
-    } | ConvertTo-Json
-    $resp = Invoke-RestMethod \`
-      -Uri "${targetProxyUrl}" \`
-      -Method Post \`
-      -Headers @{"X-API-Key"="${api.apiKey}"} \`
-      -Body $body \`
-      -ContentType "application/json"
-    Write-Host "Request \${id}: Queued - \${resp}" -ForegroundColor Green
-  } catch {
-    Write-Host "Request \${id}: Failed" -ForegroundColor Yellow
-  }
-}`
+  Start-Job -ScriptBlock {
+    param($reqId)
+    try {
+      $body = @{ path = "/orders"; method = "POST"; data = @{ item = "book"; qty = 2 } } | ConvertTo-Json
+      $resp = Invoke-RestMethod -Uri "${targetProxyUrl}" \`
+                                -Method Post \`
+                                -Headers @{"X-API-Key"="${api.apiKey}"} \`
+                                -Body $body \`
+                                -ContentType "application/json"
+      Write-Output "Request \${reqId}: Queued - \${resp}"
+    } catch {
+      \$err = \$_.Exception.Message
+      Write-Output "Request \${reqId}: Failed - \${err}"
+    }
+  } -ArgumentList $id
+} | Wait-Job | Receive-Job`
                 ) : (
 `for i in {1..20}; do curl -s -X POST "${targetProxyUrl}" -H "X-API-Key: ${api.apiKey}" -H "Content-Type: application/json" -d '{"path": "/orders", "method": "POST", "data": {"item": "book", "qty": 2}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`
                 )}
@@ -481,23 +480,22 @@ export default function MetricsPage({ api, onBack }) {
                 const scriptText = scriptTab === "powershell" ? (
 `1..20 | ForEach-Object {
   $id = $_
-  try {
-    $body = @{ 
-      path = "/orders"
-      method = "POST"
-      data = @{ item = "book"; qty = 2 } 
-    } | ConvertTo-Json
-    $resp = Invoke-RestMethod \`
-      -Uri "${targetProxyUrl}" \`
-      -Method Post \`
-      -Headers @{"X-API-Key"="${api.apiKey}"} \`
-      -Body $body \`
-      -ContentType "application/json"
-    Write-Host "Request \${id}: Queued - \${resp}" -ForegroundColor Green
-  } catch {
-    Write-Host "Request \${id}: Failed" -ForegroundColor Yellow
-  }
-}`
+  Start-Job -ScriptBlock {
+    param($reqId)
+    try {
+      $body = @{ path = "/orders"; method = "POST"; data = @{ item = "book"; qty = 2 } } | ConvertTo-Json
+      $resp = Invoke-RestMethod -Uri "${targetProxyUrl}" \`
+                                -Method Post \`
+                                -Headers @{"X-API-Key"="${api.apiKey}"} \`
+                                -Body $body \`
+                                -ContentType "application/json"
+      Write-Output "Request \${reqId}: Queued - \${resp}"
+    } catch {
+      \$err = \$_.Exception.Message
+      Write-Output "Request \${reqId}: Failed - \${err}"
+    }
+  } -ArgumentList $id
+} | Wait-Job | Receive-Job`
                 ) : (
 `for i in {1..20}; do curl -s -X POST "${targetProxyUrl}" -H "X-API-Key: ${api.apiKey}" -H "Content-Type: application/json" -d '{"path": "/orders", "method": "POST", "data": {"item": "book", "qty": 2}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`
                 );
