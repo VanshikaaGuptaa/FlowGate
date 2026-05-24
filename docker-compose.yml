@@ -63,8 +63,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
 
   # ── Proxy + Rate Limiter (application/) ──────────────────────────────────────
   proxy:
