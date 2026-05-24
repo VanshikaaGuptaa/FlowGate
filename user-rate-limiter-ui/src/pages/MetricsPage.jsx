@@ -465,9 +465,9 @@ export default function MetricsPage({ api, onBack }) {
       -Headers @{"X-API-Key"="${api.apiKey}"} \`
       -Body $body \`
       -ContentType "application/json"
-    Write-Host "Req $id: Queued - $resp" -ForegroundColor Green
+    Write-Host "Request \${id}: Queued - \${resp}" -ForegroundColor Green
   } catch {
-    Write-Host "Req $id: Failed" -ForegroundColor Yellow
+    Write-Host "Request \${id}: Failed" -ForegroundColor Yellow
   }
 }`
                 ) : (
@@ -493,9 +493,9 @@ export default function MetricsPage({ api, onBack }) {
       -Headers @{"X-API-Key"="${api.apiKey}"} \`
       -Body $body \`
       -ContentType "application/json"
-    Write-Host "Req $id: Queued - $resp" -ForegroundColor Green
+    Write-Host "Request \${id}: Queued - \${resp}" -ForegroundColor Green
   } catch {
-    Write-Host "Req $id: Failed" -ForegroundColor Yellow
+    Write-Host "Request \${id}: Failed" -ForegroundColor Yellow
   }
 }`
                 ) : (
