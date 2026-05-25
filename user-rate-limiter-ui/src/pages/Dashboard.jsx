@@ -10,6 +10,10 @@ export default function Dashboard({ onLogout, onSelectApi }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    const targetProxyUrl = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+        ? "http://localhost:8080/proxy"
+        : `${window.location.origin}/proxy`;
+
     const loadApis = async () => {
         try {
             const res = await getApis();
@@ -150,47 +154,70 @@ export default function Dashboard({ onLogout, onSelectApi }) {
                         <p>
                             All requests to your backend must be routed through our proxy.
                             We enforce rate limits before forwarding requests to your service.
-                            Note: The maximum requests limit to our proxy is 50 requests per second, the exceeded requests get rejected and not queued
+                            Note: The maximum request limit to our proxy is 50 requests per second. Exceeded requests are rejected immediately.
                         </p>
 
-                        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-                            <p className="text-slate-400 text-xs mb-1">Proxy Base URL</p>
-                            <code className="text-emerald-400">
-                                https://flowgate.website/proxy
-                            </code>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                                <p className="text-slate-400 text-xs mb-1">Proxy Base URL</p>
+                                <code className="text-emerald-400 font-mono break-all">
+                                    {targetProxyUrl}
+                                </code>
+                            </div>
+
+                            <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                                <p className="text-slate-400 text-xs mb-1">Required Header</p>
+                                <code className="text-blue-400 font-mono">
+                                    X-API-Key: &lt;your-api-key&gt;
+                                </code>
+                            </div>
                         </div>
 
                         <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-                            <p className="text-slate-400 text-xs mb-1">Required Header</p>
-                            <code className="text-blue-400">
-                                X-API-Key: {"<your-api-key>"}
-                            </code>
-                        </div>
-
-                        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-                            <p className="text-slate-400 text-xs mb-2">Example</p>
-                            <pre className="text-slate-200 text-xs overflow-x-auto">
-                                {`POST https://flowgate.website/proxy
+                            <p className="text-slate-400 text-xs mb-2">Example Payload (JSON Body)</p>
+                            <pre className="text-slate-200 text-xs overflow-x-auto font-mono">
+{`POST ${targetProxyUrl}
 X-API-Key: <your-api-key>
 Content-Type: application/json
 
 {
-  "path":   "/orders",
-  "method": "GET",
-  "data":   {}
+  "path":   "/your-endpoint-path",
+  "method": "POST",
+  "data":   { "key": "value" }
 }`}
                             </pre>
                         </div>
 
-                        
+                        <div className="bg-slate-850 rounded-xl p-5 border border-indigo-500/30 bg-gradient-to-r from-indigo-950/20 to-slate-800">
+                            <h3 className="text-md font-semibold text-indigo-300 flex items-center gap-2 mb-3">
+                                💡 Testing with the Built-in Demo App
+                            </h3>
+                            <p className="text-slate-300 text-xs mb-3">
+                                To see FlowGate's queuing and rate-limiting system in action without deploying your own backend, you can test against the demo server running on this instance:
+                            </p>
+                            <ol className="list-decimal list-inside space-y-2 text-slate-400 text-xs mb-4">
+                                <li>
+                                    Create a new API in the section above with any name and set the <strong className="text-slate-200">Target URL</strong> exactly to:
+                                    <code className="bg-slate-900 text-emerald-400 px-1.5 py-0.5 rounded ml-1 font-mono">http://172.17.0.1:9000</code> (Docker) or <code className="bg-slate-900 text-emerald-400 px-1.5 py-0.5 rounded font-mono">http://localhost:9000</code>.
+                                </li>
+                                <li>
+                                    Configure your desired <strong className="text-slate-200">Requests per Second (RPS)</strong>.
+                                </li>
+                                <li>
+                                    Click <strong className="text-slate-200">Create API</strong> and copy your new <strong className="text-indigo-300">API Key</strong>.
+                                </li>
+                                <li>
+                                    Run the following Bash command in your terminal to send a parallel burst of 20 requests:
+                                </li>
+                            </ol>
 
-                        <p className="text-slate-400 text-sm">
-                            Send any endpoint as <code className="text-slate-200">"path"</code> in
-                            the JSON body. FlowGate will forward it to your backend. <br />
-                            <span className="text-emerald-400 mt-2 inline-block">
-                                💡 <strong>Demo:</strong> To try our application using the demo running on this instance, set your Target URL to <code>http://172.17.0.1:9000</code> and use <code>/orders</code> as the path.
-                            </span>
-                        </p>
+                            <div className="bg-slate-900 rounded-lg p-3 border border-slate-700 relative">
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-1.5">Bash / cURL Test Command</p>
+                                <pre className="text-slate-200 text-xs overflow-x-auto whitespace-pre font-mono leading-relaxed">
+{`for i in {1..20}; do curl -s -X POST "${targetProxyUrl}" -H "X-API-Key: <YOUR_KEY>" -H "Content-Type: application/json" -d '{"path": "/orders", "method": "POST", "data": {"item": "book", "qty": 2}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`}
+                                </pre>
+                            </div>
+                        </div>
                     </div>
                 </section>
 

@@ -456,7 +456,7 @@ export default function MetricsPage({ api, onBack }) {
   Start-Job -ScriptBlock {
     param($reqId)
     try {
-      $body = @{ path = "/orders"; method = "POST"; data = @{ item = "book"; qty = 2 } } | ConvertTo-Json
+      $body = @{ path = "/YOUR_ENDPOINT_PATH"; method = "YOUR_HTTP_METHOD"; data = @{ key = "value" } } | ConvertTo-Json
       $resp = Invoke-RestMethod -Uri "${targetProxyUrl}" \`
                                 -Method Post \`
                                 -Headers @{"X-API-Key"="${api.apiKey}"} \`
@@ -470,7 +470,7 @@ export default function MetricsPage({ api, onBack }) {
   } -ArgumentList $id
 } | Wait-Job | Receive-Job`
                 ) : (
-`for i in {1..20}; do curl -s -X POST "${targetProxyUrl}" -H "X-API-Key: ${api.apiKey}" -H "Content-Type: application/json" -d '{"path": "/orders", "method": "POST", "data": {"item": "book", "qty": 2}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`
+`for i in {1..20}; do curl -s -X POST "${targetProxyUrl}" -H "X-API-Key: ${api.apiKey}" -H "Content-Type: application/json" -d '{"path": "/YOUR_ENDPOINT_PATH", "method": "YOUR_HTTP_METHOD", "data": {"key": "value"}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`
                 )}
               </pre>
             </div>
@@ -483,7 +483,7 @@ export default function MetricsPage({ api, onBack }) {
   Start-Job -ScriptBlock {
     param($reqId)
     try {
-      $body = @{ path = "/orders"; method = "POST"; data = @{ item = "book"; qty = 2 } } | ConvertTo-Json
+      $body = @{ path = "/YOUR_ENDPOINT_PATH"; method = "YOUR_HTTP_METHOD"; data = @{ key = "value" } } | ConvertTo-Json
       $resp = Invoke-RestMethod -Uri "${targetProxyUrl}" \`
                                 -Method Post \`
                                 -Headers @{"X-API-Key"="${api.apiKey}"} \`
@@ -497,7 +497,7 @@ export default function MetricsPage({ api, onBack }) {
   } -ArgumentList $id
 } | Wait-Job | Receive-Job`
                 ) : (
-`for i in {1..20}; do curl -s -X POST "${targetProxyUrl}" -H "X-API-Key: ${api.apiKey}" -H "Content-Type: application/json" -d '{"path": "/orders", "method": "POST", "data": {"item": "book", "qty": 2}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`
+`for i in {1..20}; do curl -s -X POST "${targetProxyUrl}" -H "X-API-Key: ${api.apiKey}" -H "Content-Type: application/json" -d '{"path": "/YOUR_ENDPOINT_PATH", "method": "YOUR_HTTP_METHOD", "data": {"key": "value"}}' -o /dev/null -w "Req $i: status %{http_code}\\n" & done; wait`
                 );
                 navigator.clipboard.writeText(scriptText);
                 alert(`${scriptTab === "powershell" ? "PowerShell" : "Bash/cURL"} script copied to clipboard!`);

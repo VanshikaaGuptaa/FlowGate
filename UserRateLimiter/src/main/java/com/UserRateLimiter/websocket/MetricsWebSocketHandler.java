@@ -61,7 +61,23 @@ public class MetricsWebSocketHandler extends TextWebSocketHandler {
                 int queueDepth = depthVal != null ? Math.max(0, Integer.parseInt(depthVal)) : 0;
 
                 String tokensVal = (String) redisTemplate.opsForHash().get("rate_limit:" + apiKey, "tokens");
-                double tokens = tokensVal != null ? Math.max(0.0, Double.parseDouble(tokensVal)) : capacity;
+                String lastRefillStr = (String) redisTemplate.opsForHash().get("rate_limit:" + apiKey, "lastRefillTime");
+
+                double tokens;
+                if (tokensVal == null || lastRefillStr == null) {
+                    tokens = capacity;
+                } else {
+                    try {
+                        double storedTokens = Double.parseDouble(tokensVal);
+                        long lastRefillTime = Long.parseLong(lastRefillStr);
+                        long now = System.currentTimeMillis();
+                        double elapsed = (now - lastRefillTime) / 1000.0;
+                        double refill = elapsed * refillRate;
+                        tokens = Math.min(capacity, Math.max(0.0, storedTokens + refill));
+                    } catch (NumberFormatException e) {
+                        tokens = capacity;
+                    }
+                }
 
                 // Manually construct JSON to avoid Jackson ObjectMapper classpath dependency
                 String json = String.format(
