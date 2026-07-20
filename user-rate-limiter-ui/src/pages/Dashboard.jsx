@@ -61,18 +61,18 @@ export default function Dashboard({ onLogout, onSelectApi }) {
     };
 
     return (
-        <div className="min-h-screen bg-slate-900 pb-12">
-            <nav className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div className="min-h-screen bg-[#09090b] text-zinc-100 pb-12">
+            <nav className="bg-[#09090b]/90 backdrop-blur-xl border-b border-zinc-800 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <div className="flex items-center">
-                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-amber-400">
                                 FlowGate
                             </span>
                         </div>
                         <button
                             onClick={onLogout}
-                            className="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-slate-700"
+                            className="text-zinc-400 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors hover:bg-zinc-900"
                         >
                             Sign Out
                         </button>
@@ -83,12 +83,12 @@ export default function Dashboard({ onLogout, onSelectApi }) {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
                 <header className="mb-8">
                     <h1 className="text-3xl font-bold text-white">Your Dashboard</h1>
-                    <p className="text-slate-400 mt-2">Manage your APIs and monitor their usage limits.</p>
+                    <p className="text-zinc-400 mt-2">Manage your APIs and monitor their usage limits.</p>
                 </header>
 
-                <section className="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl mb-12">
+                <section className="bg-zinc-950/60 backdrop-blur-xl rounded-2xl p-6 border border-zinc-800 shadow-xl mb-12">
                     <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                        <span className="w-1 h-6 bg-blue-500 rounded-full"></span>
+                        <span className="w-1 h-6 bg-emerald-400 rounded-full"></span>
                         Create New API
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -138,15 +138,15 @@ export default function Dashboard({ onLogout, onSelectApi }) {
                         <button
                             onClick={handleCreate}
                             disabled={loading}
-                            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-blue-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-lg shadow-lg hover:shadow-emerald-500/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? "Creating..." : "Create API"}
                         </button>
                     </div>
                 </section>
-                <section className="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl mb-12">
+                <section className="bg-zinc-950/60 backdrop-blur-xl rounded-2xl p-6 border border-zinc-800 shadow-xl mb-12">
                     <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                        <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
+                        <span className="w-1 h-6 bg-amber-400 rounded-full"></span>
                         How to Use Your APIs
                     </h2>
 
@@ -158,23 +158,23 @@ export default function Dashboard({ onLogout, onSelectApi }) {
                         </p>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-                                <p className="text-slate-400 text-xs mb-1">Proxy Base URL</p>
+                            <div className="bg-black/40 rounded-lg p-4 border border-zinc-800">
+                                <p className="text-zinc-400 text-xs mb-1">Proxy Base URL</p>
                                 <code className="text-emerald-400 font-mono break-all">
                                     {targetProxyUrl}
                                 </code>
                             </div>
 
-                            <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-                                <p className="text-slate-400 text-xs mb-1">Required Header</p>
-                                <code className="text-blue-400 font-mono">
+                            <div className="bg-black/40 rounded-lg p-4 border border-zinc-800">
+                                <p className="text-zinc-400 text-xs mb-1">Required Header</p>
+                                <code className="text-amber-400 font-mono">
                                     X-API-Key: &lt;your-api-key&gt;
                                 </code>
                             </div>
                         </div>
 
-                        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-                            <p className="text-slate-400 text-xs mb-2">Example Payload (JSON Body)</p>
+                        <div className="bg-black/40 rounded-lg p-4 border border-zinc-800">
+                            <p className="text-zinc-400 text-xs mb-2">Example Payload (JSON Body)</p>
                             <pre className="text-slate-200 text-xs overflow-x-auto font-mono">
 {`POST ${targetProxyUrl}
 X-API-Key: <your-api-key>
@@ -188,14 +188,14 @@ Content-Type: application/json
                             </pre>
                         </div>
 
-                        <div className="bg-slate-850 rounded-xl p-5 border border-indigo-500/30 bg-gradient-to-r from-indigo-950/20 to-slate-800">
-                            <h3 className="text-md font-semibold text-indigo-300 flex items-center gap-2 mb-3">
+                        <div className="rounded-xl p-5 border border-emerald-500/20 bg-gradient-to-r from-emerald-950/20 to-zinc-950/60">
+                            <h3 className="text-md font-semibold text-emerald-300 flex items-center gap-2 mb-3">
                                 💡 Testing with the Built-in Demo App
                             </h3>
                             <p className="text-slate-300 text-xs mb-3">
                                 To see FlowGate's queuing and rate-limiting system in action without deploying your own backend, you can test against the demo server running on this instance:
                             </p>
-                            <ol className="list-decimal list-inside space-y-2 text-slate-400 text-xs mb-4">
+                            <ol className="list-decimal list-inside space-y-2 text-zinc-400 text-xs mb-4">
                                 <li>
                                     Create a new API in the section above with any name and set the <strong className="text-slate-200">Target URL</strong> exactly to:
                                     <code className="bg-slate-900 text-emerald-400 px-1.5 py-0.5 rounded ml-1 font-mono">http://172.17.0.1:9000</code> (Docker) or <code className="bg-slate-900 text-emerald-400 px-1.5 py-0.5 rounded font-mono">http://localhost:9000</code>.
@@ -204,7 +204,7 @@ Content-Type: application/json
                                     Configure your desired <strong className="text-slate-200">Requests per Second (RPS)</strong>.
                                 </li>
                                 <li>
-                                    Click <strong className="text-slate-200">Create API</strong> and copy your new <strong className="text-indigo-300">API Key</strong>.
+                                    Click <strong className="text-slate-200">Create API</strong> and copy your new <strong className="text-amber-300">API Key</strong>.
                                 </li>
                                 <li>
                                     Run the following Bash command in your terminal to send a parallel burst of 20 requests:
@@ -227,7 +227,7 @@ Content-Type: application/json
                         Active APIs
                     </h2>
                     {apis.length === 0 ? (
-                        <div className="text-center py-12 bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-700">
+                        <div className="text-center py-12 bg-zinc-950/50 rounded-2xl border-2 border-dashed border-zinc-800">
                             <p className="text-slate-400 text-lg">No APIs created yet.</p>
                         </div>
                     ) : (
