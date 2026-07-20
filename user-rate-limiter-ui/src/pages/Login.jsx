@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { login, initiateRegister, verifyOtp } from "../api/authApi";
 
 // ── tiny icons as inline SVG ─────────────────────────────────────────────────
@@ -23,6 +23,7 @@ const ShieldIcon = () => (
 
 // ── reusable input ────────────────────────────────────────────────────────────
 function Field({ label, icon, type = "text", value, onChange, placeholder, autoFocus }) {
+  
   return (
     <div>
       <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#94a3b8", marginBottom: 6 }}>
@@ -46,8 +47,8 @@ function Field({ label, icon, type = "text", value, onChange, placeholder, autoF
             paddingRight: 16,
             paddingTop: 12,
             paddingBottom: 12,
-            background: "#0f172a",
-            border: "1px solid #334155",
+            background: "rgba(9, 9, 11, 0.65)",
+border: "1px solid #3f3f46",
             borderRadius: 10,
             color: "#f1f5f9",
             fontSize: 15,
@@ -159,7 +160,7 @@ export default function Login({ onSuccess }) {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
-
+const canvasRef = useRef(null);
   // register state
   const [regStep, setRegStep] = useState(0); // 0 = email, 1 = otp, 2 = password
   const [regEmail, setRegEmail] = useState("");
@@ -170,6 +171,191 @@ export default function Login({ onSuccess }) {
   const [regError, setRegError] = useState("");
   const [regSuccess, setRegSuccess] = useState("");
 
+  useEffect(() => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  let animationFrameId;
+
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  const particles = [];
+  const particleCount = 65;
+  const connectionDistance = 110;
+
+  const mouse = { x: null, y: null };
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+      this.vx = (Math.random() - 0.5) * 0.4;
+      this.vy = (Math.random() - 0.5) * 0.4;
+      this.radius = Math.random() * 2 + 1;
+
+      this.color =
+        Math.random() > 0.5
+          ? "rgba(255, 255, 255, 0.45)"
+          : "rgba(244, 114, 182, 0.4)";
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      if (this.x < 0) this.x = width;
+      if (this.x > width) this.x = 0;
+      if (this.y < 0) this.y = height;
+      if (this.y > height) this.y = 0;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(
+        this.x,
+        this.y,
+        this.radius,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fillStyle = this.color;
+      ctx.fill();
+    }
+  }
+
+  // Create particles
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+
+  const animate = () => {
+    ctx.clearRect(0, 0, width, height);
+
+    for (let i = 0; i < particles.length; i++) {
+      const p1 = particles[i];
+
+      p1.update();
+      p1.draw();
+
+      // Connect nearby particles
+      for (let j = i + 1; j < particles.length; j++) {
+        const p2 = particles[j];
+
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+
+        const dist = Math.sqrt(
+          dx * dx + dy * dy
+        );
+
+        if (dist < connectionDistance) {
+          const alpha =
+            (1 - dist / connectionDistance) * 0.2;
+
+          ctx.beginPath();
+
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+
+          ctx.strokeStyle =
+            `rgba(52, 211, 153, ${alpha})`;
+
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+
+      // Connect particles to mouse
+      if (
+        mouse.x !== null &&
+        mouse.y !== null
+      ) {
+        const dx = p1.x - mouse.x;
+        const dy = p1.y - mouse.y;
+
+        const dist = Math.sqrt(
+          dx * dx + dy * dy
+        );
+
+        if (dist < 150) {
+          const alpha =
+            (1 - dist / 150) * 0.35;
+
+          ctx.beginPath();
+
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(mouse.x, mouse.y);
+
+          ctx.strokeStyle =
+            `rgba(255, 255, 255, ${alpha})`;
+
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+
+    animationFrameId =
+      requestAnimationFrame(animate);
+  };
+
+  const handleMouseMove = (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  };
+
+  const handleMouseLeave = () => {
+    mouse.x = null;
+    mouse.y = null;
+  };
+
+  const handleResize = () => {
+    width = canvas.width =
+      window.innerWidth;
+
+    height = canvas.height =
+      window.innerHeight;
+  };
+
+  window.addEventListener(
+    "resize",
+    handleResize
+  );
+
+  window.addEventListener(
+    "mousemove",
+    handleMouseMove
+  );
+
+  window.addEventListener(
+    "mouseleave",
+    handleMouseLeave
+  );
+
+  animate();
+
+  return () => {
+    cancelAnimationFrame(animationFrameId);
+
+    window.removeEventListener(
+      "resize",
+      handleResize
+    );
+
+    window.removeEventListener(
+      "mousemove",
+      handleMouseMove
+    );
+
+    window.removeEventListener(
+      "mouseleave",
+      handleMouseLeave
+    );
+  };
+}, []);
   // ── login handler ─────────────────────────────────────────────────────────
   const handleLogin = async () => {
     if (!loginEmail || !loginPassword) { setLoginError("Please fill in all fields."); return; }
@@ -237,27 +423,48 @@ export default function Login({ onSuccess }) {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg, #0a0f1e 0%, #0d1b2a 50%, #0a1628 100%)",
-      padding: 16, fontFamily: "'Inter', 'Segoe UI', sans-serif",
+    <div
+    style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "#09090b",
+      padding: 16,
+      fontFamily: "'Inter', 'Segoe UI', sans-serif",
+      position: "relative",
+      overflow: "hidden",
     }}>
+      {/* Interactive Particle Background */}
+<canvas
+  ref={canvasRef}
+  style={{
+    position: "fixed",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    pointerEvents: "none",
+    zIndex: 0,
+  }}
+/>
+
       {/* background glow */}
       <div style={{ position: "fixed", top: "20%", left: "20%", width: 400, height: 400, borderRadius: "50%", background: "rgba(59,130,246,.06)", filter: "blur(80px)", pointerEvents: "none" }} />
       <div style={{ position: "fixed", bottom: "20%", right: "20%", width: 300, height: 300, borderRadius: "50%", background: "rgba(16,185,129,.05)", filter: "blur(80px)", pointerEvents: "none" }} />
 
       <div style={{
-        background: "rgba(15,23,42,.95)",
-        border: "1px solid #1e293b",
-        borderRadius: 20,
-        padding: "40px 36px",
-        width: "100%",
-        maxWidth: 440,
-        boxShadow: "0 25px 60px rgba(0,0,0,.5)",
-        backdropFilter: "blur(12px)",
-        position: "relative",
-        zIndex: 1,
-      }}>
+  background: "rgba(9, 9, 11, 0.55)",
+  border: "1px solid rgba(255, 255, 255, 0.10)",
+  borderRadius: 20,
+  padding: "40px 36px",
+  width: "100%",
+  maxWidth: 440,
+  boxShadow: "0 25px 60px rgba(0, 0, 0, 0.55)",
+  backdropFilter: "blur(18px)",
+  WebkitBackdropFilter: "blur(18px)",
+  position: "relative",
+  zIndex: 1,
+}}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{
@@ -274,7 +481,7 @@ export default function Login({ onSuccess }) {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: "flex", background: "#0f172a", borderRadius: 10, padding: 4, marginBottom: 28, border: "1px solid #1e293b" }}>
+        <div style={{ display: "flex",background: "rgba(9, 9, 11, 0.6)", borderRadius: 10, padding: 4, marginBottom: 28, border: "1px solid #1e293b" }}>
           {["login", "register"].map(t => (
             <button key={t} onClick={() => switchTab(t)} style={{
               flex: 1, padding: "9px 0", borderRadius: 7, border: "none", cursor: "pointer",

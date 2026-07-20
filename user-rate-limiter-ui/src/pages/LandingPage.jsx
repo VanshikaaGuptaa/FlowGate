@@ -51,15 +51,32 @@ const RefreshIcon = ({ className = "w-6 h-6" }) => (
 
 export default function LandingPage({ onGetStarted }) {
   // ── Simulator States ────────────────────────────────────────────────
-  const [tokens, setTokens] = useState(8);
-  const [queue, setQueue] = useState([]);
+  const capacity = 10;
+const refillRate = 2;
+const MAX_QUEUE_SIZE = 50;
+const PROCESS_INTERVAL = 500;
+
+const [tokens, setTokens] = useState(capacity);
+const [queue, setQueue] = useState([]);
+const [backendActive, setBackendActive] = useState(false);
+
+const [stats, setStats] = useState({
+  accepted: 0,
+  dropped: 0,
+  processed: 0
+});
+
+const reqCounterRef = useRef(1);
+const queueRef = useRef([]);
+const tokensRef = useRef(capacity);
+  
   const [logs, setLogs] = useState([
     { id: 1, time: "22:04:01", type: "system", msg: "FlowGate rate limiter initialized." },
     { id: 2, time: "22:04:02", type: "system", msg: "Redis connection active. Token Bucket set to 10 capacity." }
   ]);
-  const [reqCounter, setReqCounter] = useState(1);
-  const [backendActive, setBackendActive] = useState(false);
-  const [stats, setStats] = useState({ accepted: 0, dropped: 0, processed: 0 });
+
+
+
 
   // ── Code Snippet Switcher States ────────────────────────────────────
   const [codeLang, setCodeLang] = useState("curl");
@@ -139,101 +156,154 @@ System.out.println("FlowGate Status: " + response.statusCode());`
     }
   };
 
-  const capacity = 10;
-  const refillRate = 2;
+
   const logsContainerRef = useRef(null);
   const canvasRef = useRef(null);
 
-  useEffect(() => {
-    if (logsContainerRef.current) {
-      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
-    }
-  }, [logs]);
+ // Auto-scroll logs to the latest entry
+useEffect(() => {
+  if (logsContainerRef.current) {
+    logsContainerRef.current.scrollTop =
+      logsContainerRef.current.scrollHeight;
+  }
+}, [logs]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTokens((prev) => {
-        const next = Math.min(capacity, prev + (refillRate * 0.1));
-        return parseFloat(next.toFixed(2));
-      });
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (queue.length > 0) {
-        setTokens((prevTokens) => {
-          if (prevTokens >= 1) {
-            const req = queue[0];
-            setQueue((prevQ) => prevQ.slice(1));
-            setStats((s) => ({ ...s, processed: s.processed + 1 }));
-            setBackendActive(true);
-            setTimeout(() => setBackendActive(false), 250);
+// Refill token bucket
+useEffect(() => {
+  const interval = setInterval(() => {
+    const next = Math.min(
+      capacity,
+      tokensRef.current + refillRate * 0.1
+    );
 
-            const now = new Date();
-            const timeStr = now.toTimeString().split(" ")[0];
-            setLogs((prevLogs) => [
-              ...prevLogs,
-              {
-                id: Math.random(),
-                time: timeStr,
-                type: "success",
-                msg: `Worker -> Forwarded Req #${req.id} (${req.path}) to backend. Status: 200 OK`
-              }
-            ]);
+    tokensRef.current = parseFloat(next.toFixed(2));
 
-            return prevTokens - 1;
-          }
-          return prevTokens;
-        });
-      }
-    }, 500);
+    setTokens(tokensRef.current);
+  }, 100);
 
-    return () => clearInterval(interval);
-  }, [queue]);
+  return () => clearInterval(interval);
+}, []);
 
-  const addRequest = (path = "/orders") => {
-    const id = reqCounter;
-    setReqCounter((c) => c + 1);
 
-    const now = new Date();
-    const timeStr = now.toTimeString().split(" ")[0];
-
-    if (queue.length >= 12) {
-      setStats((s) => ({ ...s, dropped: s.dropped + 1 }));
-      setLogs((prevLogs) => [
-        ...prevLogs,
-        {
-          id: Math.random(),
-          time: timeStr,
-          type: "error",
-          msg: `Gateway -> Client request rejected. Error: 503 Global Rate Limit Exceeded`
-        }
-      ]);
+// Process queued requests
+useEffect(() => {
+  const interval = setInterval(() => {
+    // Nothing to process
+    if (queueRef.current.length === 0) {
       return;
     }
 
-    setQueue((prevQ) => [...prevQ, { id, path }]);
-    setStats((s) => ({ ...s, accepted: s.accepted + 1 }));
+    // Not enough tokens
+    if (tokensRef.current < 1) {
+      return;
+    }
+
+    // Get first request from queue
+    const processedRequest = queueRef.current[0];
+
+    // Remove request from queue
+    queueRef.current = queueRef.current.slice(1);
+
+    // Update visible queue
+    setQueue(queueRef.current);
+
+    // Consume one token
+    tokensRef.current -= 1;
+
+    // Update visible token count
+    setTokens(tokensRef.current);
+
+    // Update processed counter
+    setStats((prev) => ({
+      ...prev,
+      processed: prev.processed + 1
+    }));
+
+    // Show backend processing animation
+    setBackendActive(true);
+
+    setTimeout(() => {
+      setBackendActive(false);
+    }, 250);
+
+    // Add processing log
+    const now = new Date();
+    const timeStr = now.toTimeString().split(" ")[0];
+
     setLogs((prevLogs) => [
       ...prevLogs,
       {
-        id: Math.random(),
+        id: crypto.randomUUID(),
         time: timeStr,
-        type: "incoming",
-        msg: `POST /proxy -> Key validated. Status: 202 Accepted. Queued Req #${id}`
+        type: "success",
+        msg: `Worker -> Processed Req #${processedRequest.id} (${processedRequest.path}). Simulated backend response: 200 OK`
       }
     ]);
+  }, PROCESS_INTERVAL);
+
+  return () => clearInterval(interval);
+}, []);
+
+ const addRequest = (path = "/orders") => {
+  const now = new Date();
+  const timeStr = now.toTimeString().split(" ")[0];
+
+  if (queueRef.current.length >= MAX_QUEUE_SIZE) {
+    setStats((prev) => ({
+      ...prev,
+      dropped: prev.dropped + 1
+    }));
+
+    setLogs((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        time: timeStr,
+        type: "error",
+        msg: `Gateway -> Request rejected. Simulated buffer capacity (${MAX_QUEUE_SIZE}) exceeded.`
+      }
+    ]);
+
+    return;
+  }
+
+  const id = reqCounterRef.current++;
+
+  const newRequest = {
+    id,
+    path
   };
 
-  const sendBurst = () => {
-    for (let i = 0; i < 8; i++) {
-      setTimeout(() => {
-        addRequest(i % 2 === 0 ? "/orders" : "/users");
-      }, i * 80);
+  queueRef.current = [...queueRef.current, newRequest];
+
+  setQueue(queueRef.current);
+
+  setStats((prev) => ({
+    ...prev,
+    accepted: prev.accepted + 1
+  }));
+
+  setLogs((prev) => [
+    ...prev,
+    {
+      id: crypto.randomUUID(),
+      time: timeStr,
+      type: "incoming",
+      msg: `Gateway -> Request #${id} (${path}) accepted into simulated buffer.`
     }
-  };
+  ]);
+};  
+
+ const BURST_SIZE = 8;
+
+const sendBurst = () => {
+  for (let i = 0; i < BURST_SIZE; i++) {
+    setTimeout(() => {
+      addRequest(i % 2 === 0 ? "/orders" : "/users");
+    }, i * 80);
+  }
+};
 
   const handleNavClick = (e, id) => {
     e.preventDefault();
@@ -373,8 +443,7 @@ System.out.println("FlowGate Status: " + response.statusCode());`
   }, []);
 
   return (
-    <div className="min-h-screen text-zinc-100 font-sans selection:bg-emerald-500/30 relative overflow-hidden bg-transparent">
-      
+    <div className="min-h-screen text-zinc-100 font-sans selection:bg-emerald-500/30 relative overflow-hidden bg-[#09090b]">
       {/* Interactive Network Particle Background */}
       <canvas ref={canvasRef} className="fixed inset-0 w-full h-full pointer-events-none z-0" />
 
@@ -931,9 +1000,9 @@ System.out.println("FlowGate Status: " + response.statusCode());`
       <section id="simulator" className="scroll-mt-[100px] py-20 px-6 max-w-7xl mx-auto border-t border-zinc-900">
         <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
           <span className="px-3.5 py-1 bg-zinc-900 text-white border border-zinc-800 rounded-full text-xs font-bold uppercase tracking-wider">
-            Live Sandbox
+            Interactive Simulation
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white">Interact With FlowGate in Real-Time</h2>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white">See How FlowGate Handles Traffic Spikes</h2>
           <p className="text-zinc-400">
             Click to send requests below. Watch how the token bucket empties and refills while RabbitMQ queues overflow safely, feeding the backend at a steady rate.
           </p>
@@ -992,7 +1061,9 @@ System.out.println("FlowGate Status: " + response.statusCode());`
                 </div>
                 <div className="bg-zinc-950 p-2.5 rounded-lg border border-zinc-900">
                   <div className="text-xl font-extrabold text-amber-400">{stats.dropped}</div>
-                  <div className="text-[10px] text-zinc-500">503 Blocked</div>
+                  <div className="text-[10px] text-zinc-500">
+  Buffer Rejected
+</div>
                 </div>
               </div>
             </div>
@@ -1015,9 +1086,25 @@ System.out.println("FlowGate Status: " + response.statusCode());`
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-white">Visual Pipeline</h3>
-                <span className={`text-xs px-2.5 py-0.5 rounded font-semibold ${queue.length > 5 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : queue.length > 0 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-zinc-900 text-zinc-500"}`}>
-                  {queue.length > 5 ? "RATE_LIMITED" : queue.length > 0 ? "ACTIVE" : "IDLE"}
-                </span>
+                <span
+  className={`text-xs px-2.5 py-0.5 rounded font-semibold ${
+    queue.length >= MAX_QUEUE_SIZE
+      ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+      : queue.length > 10
+      ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+      : queue.length > 0
+      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+      : "bg-zinc-900 text-zinc-500"
+  }`}
+>
+  {queue.length >= MAX_QUEUE_SIZE
+    ? "BUFFER FULL"
+    : queue.length > 10
+    ? "HIGH LOAD"
+    : queue.length > 0
+    ? "BUFFERING"
+    : "IDLE"}
+</span>
               </div>
 
               {/* Graphical Pipeline Layout */}
@@ -1080,7 +1167,9 @@ System.out.println("FlowGate Status: " + response.statusCode());`
                       </div>
                     )}
                   </div>
-                  <span className="text-[10px] text-zinc-500">Buffer Size: {queue.length}</span>
+                  <span className="text-[10px] text-zinc-500">
+  Buffer: {queue.length} / {MAX_QUEUE_SIZE}
+</span>
                 </div>
 
                 {/* 3. Protected Backend */}
